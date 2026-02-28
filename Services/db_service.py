@@ -1,0 +1,30 @@
+import urllib.parse
+import os
+from dotenv import load_dotenv
+
+from sqlalchemy import Engine
+from typing import Annotated
+from fastapi import Depends
+from sqlmodel import Session, SQLModel, create_engine
+
+def get_engine_azure() -> Engine:
+    load_dotenv()
+    server = os.getenv('SERVER_NAME')
+    database= os.getenv('DATABASE')
+    user = os.getenv('UID')
+    password = os.getenv('PASSWORD')
+    engine_azure = create_engine(f"odbcapi+mssql://{user}:{password}@{server}/{database}", )
+    return engine_azure
+
+engine = get_engine_azure()
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+SessionDep = Annotated[Session, Depends(get_session)]

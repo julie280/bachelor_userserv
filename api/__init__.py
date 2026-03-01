@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Annotated
 
 import jwt
@@ -19,14 +19,17 @@ app = FastAPI(
     version="1.0.1",
    )
 
+with open('private_key.pem', 'r') as f:
+    PRIVATE_KEY = f.read()
+
+with open('public_key.pem', 'r') as f:
+    PUBLIC_KEY = f.read()
 
 @app.on_event("startup")
 def on_startup():
-    print("startup")
     create_db_and_tables()
 
 load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
@@ -44,14 +47,14 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
+        payload = jwt.decode(token, PUBLIC_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(user_id=user_id, email=payload.get("email"), roles=payload.get("roles"))
     except InvalidTokenError:
         raise credentials_exception
-    user = get_user(email=token_data.username, session=session)
+    user = get_user(user_id=token_data.user_id, session=session)
     if user is None:
         raise credentials_exception
     return user
@@ -70,7 +73,7 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": str(user.id), "email": user.email, "roles": [role.role.value for role in user.roles] }, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 

@@ -3,12 +3,13 @@ import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from pwdlib import PasswordHash
-from Models.models import User, UserCreate, UserPublic
+from Models.models import User, UserCreate, UserPublic, UserRole, Role
 
 load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
+with open('private_key.pem', 'r') as f:
+    PRIVATE_KEY = f.read()
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+
 
 password_hash = PasswordHash.recommended()
 
@@ -34,11 +35,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, PRIVATE_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_user(email: str, session):
-    user = session.query(User).filter(User.email == email).first()
+def get_user(user_id: str, session):
+    user = session.query(User).filter(User.id == user_id).first()
     if user:
         return UserPublic(id=user.id, email=user.email)
     return None
@@ -61,7 +62,7 @@ def create_user(user, session):
         raise HTTPException(status_code=400, detail="Username already registered")
 
     hashed_password = get_password_hash(user_create.password)
-    user_db = User(email=user_create.email, hashed_password=hashed_password)
+    user_db = User(email=user_create.email, hashed_password=hashed_password, role=Role.USER)
     session.add(user_db)
     session.commit()
     session.refresh(user_db)

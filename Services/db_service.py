@@ -1,20 +1,23 @@
-import urllib.parse
 import os
 from dotenv import load_dotenv
 
 from sqlalchemy import Engine
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlmodel import Session, SQLModel, create_engine
+
+from Models.models import User
+
 
 def get_engine_azure() -> Engine:
     load_dotenv()
     server = os.getenv('SERVER_NAME')
-    database= os.getenv('DATABASE')
+    database = os.getenv('DATABASE')
     user = os.getenv('UID')
     password = os.getenv('PASSWORD')
     engine_azure = create_engine(f"odbcapi+mssql://{user}:{password}@{server}/{database}", )
     return engine_azure
+
 
 engine = get_engine_azure()
 
@@ -27,4 +30,14 @@ def get_session():
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
+
 SessionDep = Annotated[Session, Depends(get_session)]
+
+def delete_user(user_id: str):
+    session = SessionDep()
+    user_data = session.get(User, user_id)
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(user_data)
+    session.commit()
+    return {"ok": True}

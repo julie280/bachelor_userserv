@@ -29,7 +29,6 @@ class User(UserBase, table=True):
 
 class UserPublic(UserBase):
     user_id: uuid.UUID
-    email: EmailStr
 
 
 class UserCreate(BaseModel):
@@ -43,6 +42,6 @@ class Role(StrEnum):
 
 
 class UserRole(SQLModel, table=True):
-    user_id: uuid.UUID = Field(foreign_key="user.id", primary_key=True, ondelete="CASCADE")
+    user_id: uuid.UUID = Field(foreign_key="user.user_id", primary_key=True, ondelete="CASCADE")
     role: Role = Field(primary_key=True)
     user: User = Relationship(back_populates="roles")

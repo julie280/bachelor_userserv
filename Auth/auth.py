@@ -76,5 +76,5 @@ def create_user(user, session):
     session.commit()
 
     session.refresh(user_db)
-    user_public = UserPublic(email=user_db.email, id=user_db.user_id)
+    user_public = UserPublic(email=user_db.email, user_id=user_db.user_id)
     return user_public

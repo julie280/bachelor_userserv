@@ -3,8 +3,8 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from Auth.auth import authenticate_user, create_access_token, create_user
-from Models.models import Token, UserCreate, UserPublic
-from Services.db_service import create_db_and_tables, SessionDep, delete_user
+from Models.models import Token, UserCreate, UserPublic, UserBase
+from Services.db_service import create_db_and_tables, SessionDep, delete_user, read_user_data
 
 app = FastAPI(
     title="API-User-service",
@@ -59,7 +59,11 @@ def get_user_data_info():
     }
     return data_info
 
+@app.get("/user/userData/{user_id}", response_model=UserBase)
+def get_user_data(user_id: str, session: SessionDep):
+    return read_user_data(user_id, session)
+
 @app.delete("/user/userData/{user_id}")
-def delete_user_data(user_id: str):
-    return delete_user(user_id)
+def delete_user_data(user_id: str, session: SessionDep):
+    return delete_user(user_id, session)
 

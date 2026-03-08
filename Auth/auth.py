@@ -63,7 +63,7 @@ def get_user(user_id: str, session):
 
 def authenticate_user(email: str, password: str, session):
     user = session.query(User).filter(User.email == email).first()
-    if not user:
+    if not user or not user.is_active:
         verify_password(password, DUMMY_HASH)
         return False
     if not verify_password(password, user.hashed_password):

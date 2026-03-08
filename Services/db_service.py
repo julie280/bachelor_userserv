@@ -48,3 +48,12 @@ def read_user_data(user_id: str, session: Session):
     if not user_data:
         raise HTTPException(status_code=404, detail="User not found")
     return UserBase.model_validate(user_data)
+
+def deactivate_user(user_id: str, session: Session):
+    user_data = session.get(User, user_id)
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    user_data.is_active = False
+    session.add(user_data)
+    session.commit()
+    return {"ok": True}

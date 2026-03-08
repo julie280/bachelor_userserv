@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from Auth.auth import authenticate_user, create_access_token, create_user
 from Models.models import Token, UserCreate, UserPublic, UserBase
-from Services.db_service import create_db_and_tables, SessionDep, delete_user, read_user_data
+from Services.db_service import create_db_and_tables, SessionDep, delete_user, read_user_data, deactivate_user
 
 app = FastAPI(
     title="API-User-service",
@@ -67,4 +67,8 @@ def get_user_data(user_id: str, session: SessionDep):
 @app.delete("/user/userData/{user_id}")
 def delete_user_data(user_id: str, session: SessionDep):
     return delete_user(user_id, session)
+
+@app.patch("/user/deactivate/{user_id}")
+def patch_deactivate_user(user_id: str, session: SessionDep):
+    return deactivate_user(user_id, session)
 

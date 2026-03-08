@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -46,7 +47,7 @@ async def login_for_access_token(
 @app.post("/user/register", response_model=UserPublic)
 # Please note: Only for testing. No Validation
 def user_register(user: UserCreate, session: SessionDep):
-    return create_user(user, session)
+        return create_user(user, session)
 
 
 @app.get("/user/dataInfo")

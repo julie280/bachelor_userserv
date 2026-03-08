@@ -18,7 +18,9 @@ def get_engine_azure() -> Engine:
     engine_azure = create_engine(f"odbcapi+mssql://{user}:{password}@{server}/{database}" )
     return engine_azure
 
-
+#load_dotenv()
+#DATABASE_URL = "postgresql://postgres:uUP;(m_hCb>&mA4(q/BR@localhost/julie_ba"
+#engine = create_engine(DATABASE_URL, echo=True)
 engine = get_engine_azure()
 
 

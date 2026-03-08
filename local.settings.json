@@ -1,7 +1,9 @@
 {
-  "IsEncrypted": true,
+  "IsEncrypted": false,
   "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "CfDJ8BzlU/bOM8lBl0PgUFB0/MVM8Dvh5+TY0UACDSz0QFuAGUVfmM6CFyG+8iVZFyK7L2X8aNHvhAwDp2xYUBgYQU7/qFoYhknNmVAYiCesbnqaLqG0EQlNYDWfIhzrRHiV/A=="
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=47218f74-4d43-4f0f-8f49-c960351da91c;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/;ApplicationId=d6a2da06-ee7d-4b7d-9855-739d1d1d6cd4"
   },
   "ConnectionStrings": {}
 }

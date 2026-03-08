@@ -91,3 +91,13 @@ urllib3==2.6.3
 uvicorn==0.41.0
 virtualenv==21.1.0
 Werkzeug==3.1.6
+
+# Source - https://stackoverflow.com/a/79238944
+# Posted by Dasari Kamali
+# Retrieved 2026-03-08, License - CC BY-SA 4.0
+
+azure-functions
+azure-monitor-opentelemetry
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-semantic-conventions

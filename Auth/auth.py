@@ -2,11 +2,9 @@ import jwt
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
-import logging
 from pwdlib import PasswordHash
 from Models.models import User, UserCreate, UserPublic, UserRole, Role
 from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import SpanKind
 import logging
 from opentelemetry.sdk._logs import LoggingHandler
@@ -92,12 +90,10 @@ def create_user(user, session):
 
     session.refresh(user_db)
     user_public = UserPublic(email=user_db.email, user_id=user_db.user_id)
-    logger.info("Hello Kamali", extra={"custom_dimension": "Kam_value"})
+
+    logger.info("New User registered", extra={"user_id": str(user_db.user_id)})
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("HTTP Request", kind=SpanKind.SERVER) as span:
-        span.set_attribute("http.method", "POST")
-        span.set_attribute("http.route", "/http_trigger")
-        span.set_attribute("http.status_code", 200)
-        span.set_attribute("custom_dimension", "Kam_value")
-        span.set_attribute("who", "Kamali")
+        span.set_attribute("custom_dimension", str(user_db.user_id))
+
     return user_public

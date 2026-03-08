@@ -1,9 +1,7 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "python",
-
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=47218f74-4d43-4f0f-8f49-c960351da91c;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/;ApplicationId=d6a2da06-ee7d-4b7d-9855-739d1d1d6cd4"
+    "FUNCTIONS_WORKER_RUNTIME": "python"
   },
   "ConnectionStrings": {}
 }

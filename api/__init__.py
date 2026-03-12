@@ -45,7 +45,6 @@ async def login_for_access_token(
 
 
 @app.post("/user/register", response_model=UserPublic)
-# Please note: Only for testing. No Validation
 def user_register(user: UserCreate, session: SessionDep):
         return create_user(user, session)
 

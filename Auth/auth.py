@@ -1,7 +1,7 @@
 import jwt
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from pwdlib import PasswordHash
 from Models.models import User, UserCreate, UserPublic, UserRole, Role
 from opentelemetry import trace
@@ -19,15 +19,15 @@ password_hash = PasswordHash.recommended()
 
 DUMMY_HASH = password_hash.hash("dummypassword")
 
-
 from datetime import datetime, timedelta, timezone
-
 
 #############logging##########
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = LoggingHandler()
 logger.addHandler(handler)
+
+
 #######################
 
 def fake_hash_password(password: str):
@@ -74,26 +74,29 @@ def authenticate_user(email: str, password: str, session):
 def create_user(user, session):
     user_create = UserCreate.model_validate(user)
 
-    existing_user = session.query(User).filter(User.email == user_create.email).first()
-
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
-
     hashed_password = get_password_hash(user_create.password)
-    user_db = User(email=user_create.email, hashed_password=hashed_password)
-    session.add(user_db)
-    session.commit()
 
-    user_role = UserRole(user_id=user_db.user_id, role=Role.USER)
-    session.add(user_role)
-    session.commit()
+    user_db = User(email=user_create.email, hashed_password=hashed_password)
+    user_db.roles.append(UserRole(role=Role.USER))
+    session.add(user_db)
+
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
 
     session.refresh(user_db)
-    user_public = UserPublic(email=user_db.email, user_id=user_db.user_id)
 
+    service_logger(user_db)
+
+    return UserPublic(email=user_db.email, user_id=user_db.user_id)
+
+
+def service_logger(user_db: User):
     logger.info("New User registered", extra={"user_id": str(user_db.user_id)})
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("HTTP Request", kind=SpanKind.SERVER) as span:
         span.set_attribute("custom_dimension", str(user_db.user_id))
-
-    return user_public

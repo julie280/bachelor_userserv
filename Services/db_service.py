@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from sqlalchemy import Engine
+from sqlalchemy import Engine, URL
 from typing import Annotated
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, SQLModel, create_engine
@@ -15,12 +15,15 @@ def get_engine_azure() -> Engine:
     database = os.getenv('DATABASE')
     user = os.getenv('UID')
     password = os.getenv('PASSWORD')
-    engine_azure = create_engine(f"odbcapi+mssql://{user}:{password}@{server}/{database}" )
-    return engine_azure
+    driver = "{ODBC Driver 18 for SQL Server}"
 
-#load_dotenv()
-#DATABASE_URL = "postgresql://postgres:uUP;(m_hCb>&mA4(q/BR@localhost/julie_ba"
-#engine = create_engine(DATABASE_URL, echo=True)
+    connection_string = f"DRIVER={driver};SERVER={server};DATABASE={database};UID={user};PWD={password}"
+    connection_url = URL.create(
+        "mssql+pyodbc", query={"odbc_connect": connection_string}
+    )
+    return create_engine(connection_url)
+
+
 engine = get_engine_azure()
 
 
@@ -35,6 +38,7 @@ def create_db_and_tables():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
+
 def delete_user(user_id: str, session: Session):
     user_data = session.get(User, user_id)
     if not user_data:
@@ -43,11 +47,13 @@ def delete_user(user_id: str, session: Session):
     session.commit()
     return {"ok": True}
 
+
 def read_user_data(user_id: str, session: Session):
     user_data = session.get(User, user_id)
     if not user_data:
         raise HTTPException(status_code=404, detail="User not found")
     return UserBase.model_validate(user_data)
+
 
 def deactivate_user(user_id: str, session: Session):
     user_data = session.get(User, user_id)

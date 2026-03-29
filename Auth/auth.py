@@ -4,10 +4,8 @@ from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from pwdlib import PasswordHash
 from Models.models import User, UserCreate, UserPublic, UserRole, Role
-from opentelemetry import trace
-from opentelemetry.trace import SpanKind
-import logging
-from opentelemetry.sdk._logs import LoggingHandler
+
+from Services.log_service import log_new_user
 
 load_dotenv()
 with open('private_key.pem', 'r') as f:
@@ -20,15 +18,6 @@ password_hash = PasswordHash.recommended()
 DUMMY_HASH = password_hash.hash("dummypassword")
 
 from datetime import datetime, timedelta, timezone
-
-#############logging##########
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = LoggingHandler()
-logger.addHandler(handler)
-
-
-#######################
 
 def fake_hash_password(password: str):
     return "fakehashed" + password
@@ -44,13 +33,14 @@ def get_password_hash(password):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    expires_delta = timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, PRIVATE_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode,
+        PRIVATE_KEY,
+        algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -89,14 +79,5 @@ def create_user(user, session):
         )
 
     session.refresh(user_db)
-
-    service_logger(user_db)
-
+    log_new_user(user_db)
     return UserPublic(email=user_db.email, user_id=user_db.user_id)
-
-
-def service_logger(user_db: User):
-    logger.info("New User registered", extra={"user_id": str(user_db.user_id)})
-    tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span("HTTP Request", kind=SpanKind.SERVER) as span:
-        span.set_attribute("custom_dimension", str(user_db.user_id))

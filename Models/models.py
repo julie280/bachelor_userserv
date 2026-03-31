@@ -20,15 +20,15 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
-    user_id: uuid.UUID      = Field(
-        default_factory =uuid.uuid4,
-        primary_key     =True,
-        max_length      =5)
-    email: EmailStr         = Field(
+    user_id: uuid.UUID = Field(
+        default_factory=uuid.uuid4,
+        primary_key=True,
+        max_length=5)
+    email: EmailStr = Field(
         unique=True,
         max_length=50)
-    hashed_password: str    = Field(...)
-    is_active: bool         = Field(default=True)
+    hashed_password: str = Field(...)
+    is_active: bool = Field(default=True)
 
     roles: list["UserRole"] = Relationship(
         back_populates="user",
